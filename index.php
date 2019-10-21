@@ -2,7 +2,7 @@
 /**
  * @package Lanzou
  * @author Filmy
- * @version 1.2.2
+ * @version 1.2.3
  * @link https://mlooc.cn
  */
 header('Access-Control-Allow-Origin:*');
