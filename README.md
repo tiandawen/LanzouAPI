@@ -9,7 +9,7 @@
 
 4. 增加ios应用在线安装
 
-5. 解析直链（经测试并不是最终直链，有失效时间，具体意义不明，可能会导致接口速度变慢，无需这步操作的可以注释代码 [128行](https://github.com/MHanL/LanzouAPI/blob/master/index.php#L128)）
+5. 解析直链（经测试并不是最终直链，有失效时间，具体意义不明，可能会导致接口速度变慢，无需这步操作的可以注释代码 [120行](https://github.com/MHanL/LanzouAPI/blob/master/index.php#L120)）
 
 ## 使用方法
 
