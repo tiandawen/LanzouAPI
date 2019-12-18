@@ -1,15 +1,8 @@
 <?php
-/**
- * @package Lanzou
- * @author Filmy
- * @version 1.2.3
- * @link https://mlooc.cn
- */
 header('Access-Control-Allow-Origin:*');
 header('Content-Type:application/json; charset=utf-8');
 //默认UA
 $UserAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36';
-
 $url = isset($_GET['url']) ? $_GET['url'] : "";
 $pwd = isset($_GET['pwd']) ? $_GET['pwd'] : "";
 $type = isset($_GET['type']) ? $_GET['type'] : "";
@@ -23,8 +16,7 @@ if (empty($url)) {
         , JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
     );
 }
-$softInfo = MloocCurlGet($url);
-
+$softInfo = MloocCurlGet($url,$UserAgent);
 if (strstr($softInfo, "文件取消分享了") != false) {
     die(
     json_encode(
@@ -81,6 +73,7 @@ if (strstr($softInfo, "手机Safari可在线安装") != false) {
         die;
     }
 }
+
 if(strstr($softInfo, "function down_p(){") != false){
 	if(empty($pwd)){
 		die(
@@ -98,19 +91,19 @@ if(strstr($softInfo, "function down_p(){") != false){
 		"sign" => $segment[2],
 		"p" => $pwd
 	);
-	$softInfo = MloocCurlPost($post_data, "https://www.lanzous.com/ajaxm.php", $url);
+	$softInfo = MloocCurlPost($post_data, "https://www.lanzous.com/ajaxm.php", $url,$UserAgent);
 }else{
 	preg_match("~\n<iframe.*?name=\"[\s\S]*?\"\ssrc=\"\/(.*?)\"~", $softInfo, $link);
 	$ifurl = "https://www.lanzous.com/" . $link[1];
-	$softInfo = MloocCurlGet($ifurl);
-	preg_match("~'action':'(.*?)','sign':'(.*?)'~", $softInfo, $segment);
+	$softInfo = MloocCurlGet($ifurl,$UserAgent);
+	preg_match_all("~\{ 'action':'(.*?)','sign':'(.*?)','ves':(.*?) \}~", $softInfo, $segment);
 	$post_data = array(
-		"action" => $segment[1],
-		"sign" => $segment[2],
+		"action" => $segment[1][1],
+		"sign" => $segment[2][1],
+		"ves" => $segment[3][1],
 	);
-	$softInfo = MloocCurlPost($post_data, "https://www.lanzous.com/ajaxm.php", $ifurl);
+	$softInfo = MloocCurlPost($post_data, "https://www.lanzous.com/ajaxm.php", $ifurl,$UserAgent);
 }
-
 $softInfo = json_decode($softInfo, true);
 if ($softInfo['zt'] != 1) {
     die(
@@ -122,11 +115,9 @@ if ($softInfo['zt'] != 1) {
         , JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
     );
 }
-
 $downUrl1 = $softInfo['dom'] . '/file/' . $softInfo['url'];
 //解析最终直链地址
 $downUrl2 = MloocCurlHead($downUrl1,"http://developer.store.pujirc.com",$UserAgent,"down_ip=1; expires=Sat, 16-Nov-2019 11:42:54 GMT; path=/; domain=.baidupan.com");
-
 if($downUrl2 == ""){
 	$downUrl = $downUrl1;
 }else{
@@ -156,7 +147,6 @@ function MloocCurlGetDownUrl($url)
 	}
 	return "";
 }
-
 function MloocCurlGet($url, $UserAgent)
 {
     $curl = curl_init();
@@ -175,7 +165,6 @@ function MloocCurlGet($url, $UserAgent)
     curl_close($curl);
     return $response;
 }
-
 function MloocCurlPost($post_data, $url, $ifurl = '', $UserAgent)
 {
     $curl = curl_init();
@@ -196,7 +185,6 @@ function MloocCurlPost($post_data, $url, $ifurl = '', $UserAgent)
     curl_close($curl);
     return $response;
 }
-
 //直链解析函数
 function MloocCurlHead($url,$guise,$UserAgent,$cookie){
 $headers = array(
@@ -223,9 +211,7 @@ $url=curl_getinfo($curl);
 curl_close($curl);
 return $url["redirect_url"];
 }
-
 function Rand_IP(){
-
     $ip2id = round(rand(600000, 2550000) / 10000);
     $ip3id = round(rand(600000, 2550000) / 10000);
     $ip4id = round(rand(600000, 2550000) / 10000);
